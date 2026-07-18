@@ -23,6 +23,10 @@ if (!res.ok)
   );
 const gist: any = await res.json();
 
+// render only this account's gists: keeps the public viewer useless as a host for anyone else's content
+if (gist.owner?.login !== "mkdynamic")
+  fail("mist: gist not owned by mkdynamic");
+
 const files: any[] = Object.values(gist.files ?? {});
 const file = files.find((f) => f.language === "Markdown") ?? files[0];
 if (!file) fail("mist: gist has no files");
