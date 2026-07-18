@@ -15,7 +15,7 @@ echo "${WEB_COLOR}[$WEB_TAG]$OFF  $WEB_URL/#<gist-id>"
 echo "$RULE"
 echo
 
-trap 'container delete --force $WEB_NAME >/dev/null 2>&1; container network delete $INSTANCE >/dev/null 2>&1' INT TERM HUP EXIT
+trap 'kill $(jobs -p) 2>/dev/null; container delete --force $WEB_NAME >/dev/null 2>&1; container network delete $INSTANCE >/dev/null 2>&1' INT TERM HUP EXIT # kill jobs first: log followers never exit on their own, even when their container is deleted
 
 # fresh network resets the IP allocator; fixed start order then pins the service IP on every restart
 container network delete "$INSTANCE" 2>/dev/null
