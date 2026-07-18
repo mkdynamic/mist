@@ -26,16 +26,16 @@ security add-generic-password -a $USER -s mist -w # -a account, -s service, -w p
 
 ## Viewer
 
-`viewer/` is a chrome-free markdown renderer served by GitHub Pages from `docs/` on main. The gist id travels in the URL fragment; the page fetches the gist from api.github.com client-side and renders it with vendored marked + DOMPurify.
+`src/viewer/` is a chrome-free markdown renderer served by GitHub Pages from `docs/` on main. The gist id travels in the URL fragment; the page fetches the gist from api.github.com client-side and renders it with vendored marked + DOMPurify.
 
 ```sh
-./viewer/build.sh # rebuild docs/ after viewer changes; commit the result
+./dev.sh # local viewer, live rebuild on save: http://mist-one-web.test/#<gist-id>
 ```
 
 ## Build
 
 ```sh
-./build.sh # self-contained darwin-arm64 binary at ./mist, via containerized bun
+./build.sh # both artifacts via containerized bun: ./mist binary (src/cli) + docs/ (src/viewer); commit docs/
 ```
 
 ## Install
