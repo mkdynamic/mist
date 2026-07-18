@@ -17,6 +17,15 @@
          rlh multiples. type: Mona Sans (GitHub's face, vendored). colors: Mooncode */
       :root {
         color-scheme: light dark;
+      }
+      /* forced modes: light-dark() and all colors follow color-scheme */
+      :root[data-theme="light"] {
+        color-scheme: light;
+      }
+      :root[data-theme="dark"] {
+        color-scheme: dark;
+      }
+      :root {
         font:
           16px/1.5625 "IBM Plex Sans",
           -apple-system,
@@ -50,7 +59,7 @@
         -moz-osx-font-smoothing: grayscale;
       }
       main {
-        max-width: 60rem; /* gist's ~950px content column */
+        max-width: 56rem; /* a step narrower than gist's ~950px column */
         margin: 0 auto;
         padding: 3rem 1.25rem 6rem;
       }
@@ -203,6 +212,31 @@
       .codebar svg {
         width: 0.875rem;
         height: 0.875rem;
+        display: block;
+      }
+
+      /* corner theme toggle: system -> light -> dark */
+      .themetoggle {
+        position: fixed;
+        top: 0.75rem;
+        right: 0.75rem;
+        display: grid;
+        place-items: center;
+        padding: 0.3rem;
+        background: none;
+        border: 0;
+        border-radius: 6px;
+        color: var(--muted);
+        opacity: 0.55;
+        cursor: pointer;
+      }
+      .themetoggle:hover {
+        opacity: 1;
+        color: var(--fg);
+      }
+      .themetoggle svg {
+        width: 1rem;
+        height: 1rem;
         display: block;
       }
 
