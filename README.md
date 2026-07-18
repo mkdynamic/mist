@@ -37,3 +37,9 @@ security add-generic-password -a $USER -s mist -w # -a account, -s service, -w p
 ```sh
 ./build.sh # self-contained darwin-arm64 binary at ./mist, via containerized bun
 ```
+
+## Install
+
+```sh
+ln -s -f "$PWD/mist" ~/.local/bin/mist # -s symbolic, -f replace existing; rebuilds update it in place
+```
