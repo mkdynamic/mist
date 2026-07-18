@@ -1,6 +1,7 @@
 // mist viewer: renders a secret gist named by the URL fragment. Static page,
 // zero content of its own; the gist id never reaches the Pages server (fragment).
 
+import "@fontsource-variable/mona-sans"; // vendored, served from our own origin
 import DOMPurify from "dompurify";
 import hljs from "highlight.js/lib/core";
 import bash from "highlight.js/lib/languages/bash";

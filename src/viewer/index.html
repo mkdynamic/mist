@@ -6,13 +6,14 @@
     <meta name="robots" content="noindex" />
     <title>mist</title>
     <style>
-      /* rhythm: 1rlh (root line-height, 16px * 1.65) is the one vertical unit;
-         block margins and heading line-heights are rlh multiples.
-         colors: Mooncode (Zed theme), light-dark() pairs */
+      /* rhythm: 1rlh (root line-height, 16px * 1.5625 = 25px, a scootch past gist's
+         24px) is the one vertical unit; block margins and heading line-heights are
+         rlh multiples. type: Mona Sans (GitHub's face, vendored). colors: Mooncode */
       :root {
         color-scheme: light dark;
         font:
-          16px/1.65 -apple-system,
+          16px/1.5625 "Mona Sans Variable",
+          -apple-system,
           BlinkMacSystemFont,
           "Segoe UI",
           sans-serif;
@@ -43,7 +44,7 @@
         -moz-osx-font-smoothing: grayscale;
       }
       main {
-        max-width: 44rem;
+        max-width: 60rem; /* gist's ~950px content column */
         margin: 0 auto;
         padding: 3rem 1.25rem 6rem;
       }
@@ -64,6 +65,12 @@
       h6 {
         font-size: 1rem;
         line-height: 1rlh;
+      }
+      h1,
+      h2 {
+        /* gist's section rules under the two top heading levels */
+        padding-bottom: 0.3em;
+        border-bottom: 1px solid var(--border-variant);
       }
       /* rhythm scale, two constants: 0.75rlh between all blocks,
          1.5rlh opening a section (collapses with the previous block's 0.75) */
@@ -118,8 +125,9 @@
         text-indent: 0;
       }
       code {
+        /* gist's 85% mono scale */
         font:
-          0.9em ui-monospace,
+          0.85em ui-monospace,
           SFMono-Regular,
           Menlo,
           monospace;
