@@ -18,6 +18,10 @@ import typescript from "highlight.js/lib/languages/typescript";
 import xml from "highlight.js/lib/languages/xml"; // also covers html
 import yaml from "highlight.js/lib/languages/yaml";
 import { marked } from "marked";
+import { markedSmartypants } from "marked-smartypants";
+
+// typographic punctuation: curly quotes, en/em dashes, ellipses (skips code)
+marked.use(markedSmartypants());
 
 const languages = {
   bash,
