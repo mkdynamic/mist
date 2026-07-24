@@ -38,6 +38,28 @@ const languages = {
 for (const [name, lang] of Object.entries(languages))
   hljs.registerLanguage(name, lang);
 
+// no upstream turtle grammar; minimal one for ```turtle / ```ttl fences
+hljs.registerLanguage("turtle", () => ({
+  name: "Turtle",
+  aliases: ["ttl"],
+  contains: [
+    hljs.COMMENT("#", "$"),
+    { scope: "meta", begin: /@(prefix|base)\b/ },
+    { scope: "keyword", begin: /(?:PREFIX|BASE)\b/ },
+    { scope: "title", begin: /<[^<>"{}|^`\\\s]*>/ }, // IRIREF
+    {
+      scope: "string",
+      begin: /"""|"/,
+      end: /"""|"/,
+      contains: [{ begin: /\\./ }],
+    },
+    { scope: "meta", begin: /[@^][a-zA-Z^-]+/ }, // @lang tag, ^^ datatype lead
+    { scope: "keyword", begin: /\ba\b/ }, // rdf:type
+    { scope: "property", begin: /[A-Za-z0-9_-]*:[^\s;,.()\]]+/ }, // prefixed name
+    { scope: "number", begin: /\b[+-]?\d+(\.\d+)?([eE][+-]?\d+)?\b/ },
+  ],
+}));
+
 const doc = document.getElementById("doc")!;
 
 // fragment-only navigation fires no page load; the render below runs once, so reload
@@ -59,6 +81,9 @@ const icons = {
     '<circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/>',
   ),
   moon: icon('<path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/>'),
+  tree: icon(
+    '<path d="M21 12h-8"/><path d="M21 6H8"/><path d="M21 18h-8"/><path d="M3 6v4c0 1.1.9 2 2 2h3"/><path d="M3 10v6c0 1.1.9 2 2 2h3"/>',
+  ),
 };
 
 // theme: plain light/dark flip; system is the invisible default. The icon shows
@@ -112,8 +137,7 @@ const gist: any = await res.json();
 
 // render only these accounts' gists: keeps the public viewer useless as a host for anyone else's content
 const OWNERS = ["mkdynamic", "calebelston"];
-if (!OWNERS.includes(gist.owner?.login))
-  fail("mist: gist owner not allowed");
+if (!OWNERS.includes(gist.owner?.login)) fail("mist: gist owner not allowed");
 
 const files: any[] = Object.values(gist.files ?? {});
 const file = files.find((f) => f.language === "Markdown") ?? files[0];
@@ -187,4 +211,75 @@ for (const code of doc.querySelectorAll<HTMLElement>("pre > code")) {
   }
 
   block.append(bar);
+}
+
+// right-edge outline rail: heading structure as lines, current section lit
+const headings = [...doc.querySelectorAll<HTMLElement>("h1, h2, h3")];
+if (headings.length > 1) {
+  const rail = document.createElement("nav");
+  rail.className = "outline";
+  rail.setAttribute("aria-label", "document outline");
+  const lines = headings.map((heading) => {
+    const line = document.createElement("button");
+    line.className = "l" + heading.tagName[1];
+    line.title = heading.textContent ?? "";
+    line.setAttribute("aria-label", heading.textContent ?? "");
+    line.addEventListener("click", () =>
+      heading.scrollIntoView({ behavior: "smooth", block: "start" }),
+    );
+    rail.append(line);
+    return line;
+  });
+  // outline drawer: hidden by default, slides in from the left
+  const toc = document.createElement("nav");
+  toc.className = "toc";
+  toc.setAttribute("aria-label", "outline");
+
+  const tocToggle = document.createElement("button");
+  tocToggle.className = "toctoggle";
+  tocToggle.innerHTML = icons.tree;
+  tocToggle.title = "outline";
+  tocToggle.setAttribute("aria-label", "toggle outline");
+  tocToggle.setAttribute("aria-expanded", "false");
+
+  const setToc = (open: boolean) => {
+    toc.classList.toggle("open", open);
+    document.documentElement.classList.toggle("toc-open", open);
+    tocToggle.setAttribute("aria-expanded", String(open));
+  };
+  tocToggle.addEventListener("click", () =>
+    setToc(!toc.classList.contains("open")),
+  );
+  addEventListener("keydown", (event) => {
+    if (event.key === "Escape") setToc(false);
+  });
+
+  const entries = headings.map((heading) => {
+    const entry = document.createElement("button");
+    entry.className = "l" + heading.tagName[1];
+    entry.textContent = heading.textContent ?? "";
+    entry.addEventListener("click", () =>
+      heading.scrollIntoView({ behavior: "smooth", block: "start" }),
+    );
+    toc.append(entry);
+    return entry;
+  });
+
+  const mark = () => {
+    const cut = innerHeight * 0.35;
+    let active = 0;
+    headings.forEach((heading, i) => {
+      if (heading.getBoundingClientRect().top <= cut) active = i;
+    });
+    lines.forEach((line, i) =>
+      line.setAttribute("aria-current", String(i === active)),
+    );
+    entries.forEach((entry, i) =>
+      entry.setAttribute("aria-current", String(i === active)),
+    );
+    entries[active]?.scrollIntoView({ block: "nearest" });
+  };
+  addEventListener("scroll", mark, { passive: true });
+  mark();
+  document.body.append(rail, tocToggle, toc);
 }

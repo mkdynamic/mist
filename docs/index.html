@@ -5,16 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="robots" content="noindex" />
     <title>mist</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,600;1,400&family=IBM+Plex+Sans:ital,wght@0,400;0,600;0,700;1,400&display=swap"
-      rel="stylesheet"
-    />
     <style>
       /* rhythm: 1rlh (root line-height, 16px * 1.5625 = 25px, a scootch past gist's
          24px) is the one vertical unit; block margins and heading line-heights are
-         rlh multiples. type: Mona Sans (GitHub's face, vendored). colors: Mooncode */
+         rlh multiples. colors: JetBrains Islands light/dark */
       :root {
         color-scheme: light dark;
       }
@@ -27,27 +21,21 @@
       }
       :root {
         font:
-          16px/1.5625 "IBM Plex Sans",
-          -apple-system,
+          17.5px/1.7143 -apple-system,
           BlinkMacSystemFont,
+          system-ui,
           "Segoe UI",
           sans-serif;
-        /* Mooncode values converted to oklch; surface/border L nudged ~1-1.5
-           points away from --bg for slightly firmer separation */
-        --bg: light-dark(oklch(99.4% 0.001 286), oklch(24.4% 0.01 268));
-        --fg: light-dark(oklch(12.3% 0.003 286), oklch(97.6% 0.001 286));
-        --muted: light-dark(oklch(55.4% 0.017 278), oklch(73.7% 0.01 315));
-        --accent: light-dark(oklch(48.4% 0.084 182), oklch(65.4% 0.116 180));
-        --surface: light-dark(oklch(96.8% 0.001 286), oklch(27% 0.014 267));
-        --surface-strong: light-dark(
-          oklch(94.5% 0.006 264),
-          oklch(29.5% 0.019 272)
-        );
-        --border: light-dark(oklch(89% 0.01 267), oklch(32% 0.017 266));
-        --border-variant: light-dark(
-          oklch(92.5% 0.007 268),
-          oklch(29.5% 0.016 264)
-        );
+        /* JetBrains Islands: page carries the editor background, code blocks
+           the surface */
+        --bg: light-dark(#ffffff, #191a1c);
+        --fg: light-dark(#080808, #dfe1e5);
+        --muted: light-dark(#404040, #b0b1b3);
+        --accent: light-dark(#006dcc, #56a8f5);
+        --surface: light-dark(#f5f7f9, #26282b);
+        --surface-strong: light-dark(#e3e3e5, #393b41);
+        --border: light-dark(#e9eaee, #26282c);
+        --border-variant: light-dark(#e9ebee, #1e2023);
       }
       * {
         margin: 0;
@@ -55,11 +43,21 @@
       body {
         background: var(--bg);
         color: var(--fg);
+        text-wrap: pretty;
         -webkit-font-smoothing: antialiased;
         -moz-osx-font-smoothing: grayscale;
+        /* open sidebar pushes content, in step with the drawer slide */
+        transition: padding-left 200ms ease;
+      }
+      :root.toc-open body {
+        padding-left: 16rem;
+      }
+      pre,
+      code {
+        text-wrap: auto;
       }
       main {
-        max-width: 56rem; /* a step narrower than gist's ~950px column */
+        max-width: 47.5rem; /* ~830px at the 17.5px root */
         margin: 0 auto;
         padding: 3rem 1.25rem 6rem;
       }
@@ -80,12 +78,6 @@
       h6 {
         font-size: 1rem;
         line-height: 1rlh;
-      }
-      h1,
-      h2 {
-        /* gist's section rules under the two top heading levels */
-        padding-bottom: 0.3em;
-        border-bottom: 1px solid var(--border-variant);
       }
       /* rhythm scale, two constants: 0.75rlh between all blocks,
          1.5rlh opening a section (collapses with the previous block's 0.75) */
@@ -127,6 +119,8 @@
       }
       pre {
         background: var(--surface);
+        /* editor.foreground: code prose sits a step dimmer than page text in dark */
+        color: light-dark(#080808, #bcbec4);
         padding: 0.8rem 1rem;
         border-radius: 10px;
         line-height: 1.5;
@@ -142,8 +136,7 @@
       code {
         /* gist's 85% mono scale */
         font:
-          0.85em "IBM Plex Mono",
-          ui-monospace,
+          0.85em ui-monospace,
           SFMono-Regular,
           Menlo,
           monospace;
@@ -157,9 +150,21 @@
         max-width: 100%;
       }
       blockquote {
-        padding-left: 1rem;
-        border-left: 3px solid var(--border);
-        color: var(--muted);
+        position: relative;
+        padding-left: 1.1rem;
+        /* a smidge further from body text than --muted */
+        color: light-dark(#4e5157, #a5a7ab);
+      }
+      blockquote::before {
+        /* pill-ended bar; a step past --border toward --muted so it reads on both grounds */
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 4px;
+        border-radius: 2px;
+        background: light-dark(#e5e7ec, #34373c);
       }
       table {
         border-collapse: collapse;
@@ -215,6 +220,135 @@
         display: block;
       }
 
+      /* right-edge outline rail: one line per heading, width by depth */
+      .outline {
+        position: fixed;
+        top: 50%;
+        right: 1.25rem;
+        translate: 0 -50%;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 0;
+      }
+      .outline button {
+        display: block;
+        /* hit areas tile with no dead space: half the visual gap as padding on
+           each side, plus leftward slop; the 2px line is the clipped content box */
+        box-sizing: content-box;
+        height: 2px;
+        padding: 0.4rem 0 0.4rem 0.75rem;
+        border: 0;
+        background: var(--surface-strong);
+        background-clip: content-box;
+        cursor: pointer;
+        transition: background 120ms;
+      }
+      .outline button:hover {
+        background-color: var(--muted);
+      }
+      .outline button[aria-current="true"] {
+        background-color: light-dark(#b6b9c0, #55585e);
+      }
+      .outline .l1 {
+        width: 1.5rem;
+      }
+      .outline .l2 {
+        width: 1rem;
+      }
+      .outline .l3 {
+        width: 0.5rem;
+      }
+      @media (max-width: 78rem) {
+        .outline {
+          display: none;
+        }
+      }
+      h1,
+      h2,
+      h3 {
+        scroll-margin-top: 1rlh;
+      }
+
+      /* outline toggle, mirror of the theme toggle */
+      .toctoggle {
+        position: fixed;
+        top: 0.75rem;
+        left: 0.75rem;
+        z-index: 30;
+        display: grid;
+        place-items: center;
+        padding: 0.3rem;
+        background: none;
+        border: 0;
+        border-radius: 6px;
+        color: var(--muted);
+        opacity: 0.55;
+        cursor: pointer;
+      }
+      .toctoggle:hover,
+      .toctoggle[aria-expanded="true"] {
+        opacity: 1;
+        color: var(--fg);
+      }
+      .toctoggle svg {
+        width: 1rem;
+        height: 1rem;
+        display: block;
+      }
+      /* outline drawer: full-height, slides from the left edge */
+      .toc {
+        position: fixed;
+        inset: 0 auto 0 0;
+        z-index: 20;
+        width: 16rem;
+        box-sizing: border-box;
+        /* list sits below the toggle, left-aligned with its glyph */
+        padding: 3.35rem 1.25rem 1.5rem 1.175rem;
+        background: var(--surface);
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        translate: -100% 0;
+        visibility: hidden;
+        transition:
+          translate 200ms ease,
+          visibility 200ms;
+      }
+      .toc.open {
+        translate: 0 0;
+        visibility: visible;
+      }
+      .toc button {
+        display: block;
+        width: 100%;
+        padding: 0;
+        background: none;
+        border: 0;
+        font-size: 0.8rem;
+        line-height: 1.3;
+        text-align: left;
+        color: var(--muted);
+        cursor: pointer;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .toc button:hover {
+        color: var(--fg);
+      }
+      .toc button[aria-current="true"] {
+        color: var(--fg);
+        font-weight: 600;
+      }
+      .toc .l2 {
+        padding-left: 0.75rem;
+      }
+      .toc .l3 {
+        padding-left: 1.5rem;
+      }
+
       /* corner theme toggle: system -> light -> dark */
       .themetoggle {
         position: fixed;
@@ -240,53 +374,61 @@
         display: block;
       }
 
-      /* syntax tokens (highlight.js), mapped from Mooncode's syntax palette */
+      /* syntax tokens (highlight.js), mapped from JetBrains Islands syntax palette */
       .hljs-comment,
       .hljs-quote {
-        color: light-dark(oklch(55.8% 0.02 279), oklch(74.6% 0.01 315));
+        color: light-dark(#8c8c8c, #7a7e85);
       }
       .hljs-keyword,
-      .hljs-selector-tag,
-      .hljs-doctag,
-      .hljs-tag {
-        color: light-dark(oklch(45.6% 0.079 182), oklch(65.4% 0.116 180));
+      .hljs-doctag {
+        color: light-dark(#0033b3, #cf8e6d);
+      }
+      .hljs-tag,
+      .hljs-selector-tag {
+        color: light-dark(#0033b3, #d5b778);
       }
       .hljs-string,
       .hljs-regexp,
-      .hljs-symbol,
+      .hljs-symbol {
+        color: light-dark(#067d17, #6aab73);
+      }
       .hljs-char.escape_ {
-        color: light-dark(oklch(48.3% 0.102 71), oklch(76.2% 0.162 70));
+        color: light-dark(#0037a6, #cf8e6d);
       }
       .hljs-title,
       .hljs-name {
-        color: light-dark(oklch(38.9% 0.077 96), oklch(91.9% 0.143 98));
+        color: light-dark(#00627a, #56a8f5);
       }
       .hljs-type,
-      .hljs-built_in,
       .hljs-title.class_ {
-        color: light-dark(oklch(42.8% 0.079 178), oklch(83% 0.153 177));
+        color: light-dark(#a04908, #86985d);
+      }
+      .hljs-built_in {
+        color: light-dark(#0033b3, #cf8e6d);
       }
       .hljs-number,
       .hljs-literal {
-        color: light-dark(oklch(45.8% 0.118 138), oklch(83.1% 0.161 136));
+        color: light-dark(#1750eb, #2aacb8);
       }
       .hljs-attr,
       .hljs-attribute,
       .hljs-property,
       .hljs-selector-class,
-      .hljs-selector-id,
+      .hljs-selector-id {
+        color: light-dark(#871094, #c77dbb);
+      }
       .hljs-variable,
       .hljs-template-variable {
-        color: light-dark(oklch(45.9% 0.08 182), oklch(65.4% 0.116 180));
+        color: light-dark(#000000, #bcbec4);
       }
       .hljs-operator {
-        color: light-dark(oklch(50% 0.107 69), oklch(76.2% 0.162 70));
+        color: light-dark(#080808, #bcbec4);
       }
       .hljs-meta {
-        color: light-dark(oklch(49.1% 0.024 274), oklch(87.7% 0.009 308));
+        color: light-dark(#9e880d, #b3ae60);
       }
       .hljs-section {
-        color: light-dark(oklch(39.1% 0.018 268), oklch(97.6% 0.001 286));
+        color: light-dark(#871094, #c77dbb);
         font-weight: 700;
       }
       .hljs-emphasis {
@@ -305,7 +447,7 @@
       }
     </style>
     
-  <script type="module" crossorigin src="./index-m4tavfmn.js"></script></head>
+  <script type="module" crossorigin src="./index-5vpcd871.js"></script></head>
   <body>
     <main id="doc"></main>
   </body>
