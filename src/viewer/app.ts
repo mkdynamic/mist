@@ -110,9 +110,10 @@ if (!res.ok)
   );
 const gist: any = await res.json();
 
-// render only this account's gists: keeps the public viewer useless as a host for anyone else's content
-if (gist.owner?.login !== "mkdynamic")
-  fail("mist: gist not owned by mkdynamic");
+// render only these accounts' gists: keeps the public viewer useless as a host for anyone else's content
+const OWNERS = ["mkdynamic", "calebelston"];
+if (!OWNERS.includes(gist.owner?.login))
+  fail("mist: gist owner not allowed");
 
 const files: any[] = Object.values(gist.files ?? {});
 const file = files.find((f) => f.language === "Markdown") ?? files[0];
