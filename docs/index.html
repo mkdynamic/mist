@@ -26,9 +26,9 @@
           system-ui,
           "Segoe UI",
           sans-serif;
-        /* JetBrains Islands: page carries the editor background, code blocks
-           the surface */
-        --bg: light-dark(#ffffff, #191a1c);
+        /* JetBrains Islands, dark taken to true black: page and code blocks
+           share the black ground, code blocks delineated by border */
+        --bg: light-dark(#ffffff, #000000);
         --fg: light-dark(#080808, #dfe1e5);
         --muted: light-dark(#404040, #b0b1b3);
         --accent: light-dark(#006dcc, #56a8f5);
@@ -118,7 +118,8 @@
         position: relative;
       }
       pre {
-        background: var(--surface);
+        background: light-dark(var(--surface), #000000);
+        border: 1px solid light-dark(rgb(0 0 0 / 3%), #212325);
         /* editor.foreground: code prose sits a step dimmer than page text in dark */
         color: light-dark(#080808, #bcbec4);
         padding: 0.8rem 1rem;
@@ -142,7 +143,8 @@
           monospace;
       }
       :not(pre) > code {
-        background: var(--surface-strong);
+        background: light-dark(var(--surface), #2d2f33);
+        border: 1px solid light-dark(rgb(0 0 0 / 3%), transparent);
         padding: 0.2em 0.4em;
         border-radius: 6px;
       }
@@ -447,7 +449,7 @@
       }
     </style>
     
-  <script type="module" crossorigin src="./index-b7dz98mn.js"></script></head>
+  <script type="module" crossorigin src="./index-5qkez4af.js"></script></head>
   <body>
     <main id="doc"></main>
   </body>
