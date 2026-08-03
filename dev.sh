@@ -24,7 +24,7 @@ container network create "$INSTANCE" >/dev/null || exit 1
 container create --name "$WEB_NAME" --network "$INSTANCE" --volume "$PWD:/app" --workdir /app \
   --env PORT=$WEB_PORT \
   --env FORCE_COLOR=1 \
-  oven/bun:1.3 bun --watch --no-clear-screen src/viewer/serve.ts >/dev/null || exit 1
+  dhi.io/bun:1.3.14-dev bun --watch --no-clear-screen src/viewer/serve.ts >/dev/null || exit 1
 
 container start "$WEB_NAME" >/dev/null
 dscacheutil -flushcache # names register at start; clear negatives cached by any lookup that raced the boot
